@@ -79,6 +79,7 @@ void ANoobCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 		
 		// Jumping
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
+		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ANoobCharacter::WallJump);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
 
 		// Moving
@@ -91,6 +92,39 @@ void ANoobCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	{
 		UE_LOG(LogTemplateCharacter, Error, TEXT("'%s' Failed to find an Enhanced Input component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."), *GetNameSafe(this));
 	}
+}
+
+void ANoobCharacter::WallJump(const FInputActionValue& Value)
+{
+
+	if (GetVelocity().Length() == 0)
+		return;
+	else
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Cyan, TEXT("velocity: " + GetVelocity().ToString()));
+
+	auto skeletalMesh  = FindComponentByClass<USkeletalMeshComponent>();
+	auto worldLocation = skeletalMesh->GetComponentLocation();
+	auto forwardVector = skeletalMesh->GetForwardVector();
+	auto rightVector   = skeletalMesh->GetRightVector();
+
+	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Cyan, TEXT("worldLocation: " + worldLocation.ToString()));
+	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Cyan, TEXT("forwardVector: " + forwardVector.ToString()));
+	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Cyan, TEXT("rightVector: " + rightVector.ToString()));
+
+	auto leftJumpVector = worldLocation + ((forwardVector + rightVector) * 100.0);
+
+	FHitResult hitResult;
+	FCollisionQueryParams collisionQueryParams;
+	ActorLineTraceSingle(hitResult, worldLocation, leftJumpVector, ECollisionChannel::ECC_Visibility, collisionQueryParams);
+
+	DrawDebugLine(
+		GetWorld(),
+		worldLocation,
+		leftJumpVector,
+		FColor(255, 0, 0),
+		false, 1, 0,
+		1
+	);
 }
 
 void ANoobCharacter::Move(const FInputActionValue& Value)

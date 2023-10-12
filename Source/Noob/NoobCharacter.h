@@ -47,7 +47,7 @@ class ANoobCharacter : public ACharacter
 public:
 	ANoobCharacter();
 	
-
+	
 protected:
 
 	/** Called for movement input */
@@ -55,6 +55,8 @@ protected:
 
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
+
+	void WallJump(const FInputActionValue& Value);
 			
 
 protected:
